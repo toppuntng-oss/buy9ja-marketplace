@@ -1,0 +1,30 @@
+{
+  "name": "buy9ja-marketplace-api",
+  "version": "2.0.0",
+  "description": "Oracle Autonomous Database API Backend for Buy9ja Marketplace App",
+  "main": "server-oracle.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server-oracle.js",
+    "dev": "node --watch server-oracle.js",
+    "check": "node check-connection-oracle.js"
+  },
+  "keywords": [
+    "api",
+    "oracle",
+    "autonomous-database",
+    "express",
+    "buy9ja",
+    "marketplace",
+    "paystack"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "oracledb": "^6.10.0",
+    "paystack": "^2.0.1"
+  }
+}

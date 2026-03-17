@@ -1,0 +1,63 @@
+# Environment Variables (CRITICAL - Contains Sensitive Data)
+.env
+.env.local
+.env.*.local
+
+# Oracle Wallet Files (Contains Database Credentials)
+wallet/
+*.sso
+*.p12
+*.jks
+cwallet.sso
+ewallet.p12
+tnsnames.ora
+sqlnet.ora
+keystore.jks
+ojdbc.properties
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# PM2 Logs and Runtime
+logs/
+*.log
+.pm2/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary Files
+*.tmp
+*.temp
+.cache/
+
+# Database Connection Test Output
+connection-test-*.txt
+
+# OS Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE/Editor Files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Backup Files
+*.bak
+*.backup
+*.old
+
