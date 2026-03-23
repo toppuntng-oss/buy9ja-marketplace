@@ -88,6 +88,7 @@ backend/tnsnames.ora
 backend/sqlnet.ora
 backend/keystore.jks
 backend/ojdbc.properties
+backend/oracle-client/
 
 # Backend Logs
 backend/logs/
