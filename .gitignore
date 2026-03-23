@@ -126,3 +126,4 @@ $RECYCLE.BIN/
 # ============================================
 .dev.vars
 wrangler.toml.backup
+backend/oracle-client/
