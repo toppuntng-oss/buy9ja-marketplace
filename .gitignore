@@ -1,0 +1,127 @@
+# Buy9ja Marketplace - Root .gitignore
+
+# ============================================
+# Environment Variables (CRITICAL - NEVER COMMIT)
+# ============================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ============================================
+# Dependencies
+# ============================================
+node_modules/
+.pnp
+.pnp.js
+
+# ============================================
+# Production Build
+# ============================================
+dist/
+dist-ssr/
+build/
+*.local
+
+# ============================================
+# Logs
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================
+# Editor Directories and Files
+# ============================================
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+
+# ============================================
+# Testing
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+.cache/
+.vite/
+.turbo/
+
+# ============================================
+# OS Files
+# ============================================
+Thumbs.db
+*~
+.DS_Store
+
+# ============================================
+# Backend Specific Files
+# ============================================
+# Oracle Wallet (Database Credentials)
+backend/wallet/
+backend/*.sso
+backend/*.p12
+backend/*.jks
+backend/cwallet.sso
+backend/ewallet.p12
+backend/tnsnames.ora
+backend/sqlnet.ora
+backend/keystore.jks
+backend/ojdbc.properties
+
+# Backend Logs
+backend/logs/
+backend/*.log
+
+# PM2
+.pm2/
+ecosystem.config.js.bak
+backend/.pm2/
+backend/pids/
+backend/*.pid
+
+# ============================================
+# Supabase (if used in future)
+# ============================================
+.vercel
+.netlify
+
+# ============================================
+# Mac/Linux
+# ============================================
+.AppleDouble
+.LSOverride
+
+# ============================================
+# Windows
+# ============================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ============================================
+# Cloudflare
+# ============================================
+.dev.vars
+wrangler.toml.backup
