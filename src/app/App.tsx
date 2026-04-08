@@ -28,6 +28,7 @@ import {
   type Vendor,
   type Product,
 } from "@/services/marketplaceData";
+import { OrderAPI, PaymentAPI } from "@/services/api";
 
 interface CartItemType {
   id: string;
@@ -55,6 +56,9 @@ export default function App() {
   const [showCart, setShowCart] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [paymentReference, setPaymentReference] = useState<string>("");
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState<string>("");
 
   // Navigation handlers
   const handleCategoryClick = (category: Category) => {
@@ -142,38 +146,103 @@ export default function App() {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
-  const handleCheckout = () => {
-    if (cart.length === 0) return;
-
-    const newOrder: Order = {
-      id: `ORD${Date.now().toString().slice(-6)}`,
-      status: "preparing",
-      estimatedTime: "25-35 min",
-      items: [...cart],
-      total: calculateTotal() + 500,
-    };
-
-    setOrders((prevOrders) => [newOrder, ...prevOrders]);
-    setCart([]);
-    setShowCart(false);
-    setCurrentView("orders");
-
-    setTimeout(() => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === newOrder.id ? { ...order, status: "on-the-way" } : order
-        )
-      );
-    }, 5000);
+  // Initialize payment with backend before showing Paystack
+  const handleInitializePayment = async () => {
+    if (cart.length === 0 || isProcessingPayment) return;
+    
+    setIsProcessingPayment(true);
+    
+    try {
+      // Get vendor info from cart items (assuming single vendor per cart)
+      const vendorInfo = selectedVendor || vendors[0];
+      
+      // Create order in database first
+      const orderData = {
+        vendorId: vendorInfo.id,
+        vendorName: vendorInfo.name,
+        items: cart,
+        total: calculateTotal() + 500,
+        userId: "user123" // Replace with actual user ID
+      };
+      
+      const createdOrder = await OrderAPI.createOrder(orderData);
+      const orderId = createdOrder.ID || createdOrder.id;
+      setCurrentOrderId(orderId);
+      
+      console.log("✅ Order created in database:", orderId);
+      
+      // Initialize payment with Paystack
+      const paymentResult = await PaymentAPI.initializePayment({
+        email: "customer@buy9ja.com",
+        amount: (calculateTotal() + 500) * 100, // Amount in kobo
+        orderId: orderId,
+        items: cart
+      });
+      
+      console.log("✅ Payment initialized:", paymentResult.reference);
+      setPaymentReference(paymentResult.reference);
+      
+      // Return payment data to PaystackButton
+      return paymentResult;
+    } catch (error) {
+      console.error("❌ Error initializing payment:", error);
+      alert("Failed to initialize payment. Please try again.");
+      setIsProcessingPayment(false);
+      return null;
+    }
   };
 
-  const handlePaymentSuccess = (response: any) => {
-    console.log("Payment successful!", response);
-    handleCheckout();
+  // Handle payment success callback from Paystack
+  const handlePaymentSuccess = async (response: any) => {
+    console.log("💳 Paystack payment callback:", response);
+    
+    try {
+      // Verify payment with backend
+      const verificationResult = await PaymentAPI.verifyPayment(response.reference);
+      
+      console.log("✅ Payment verification result:", verificationResult);
+      
+      if (verificationResult.success && verificationResult.status === "success") {
+        // Payment successful - update local state
+        const newOrder: Order = {
+          id: currentOrderId,
+          status: "preparing",
+          estimatedTime: "25-35 min",
+          items: [...cart],
+          total: calculateTotal() + 500,
+        };
+        
+        setOrders((prevOrders) => [newOrder, ...prevOrders]);
+        setCart([]);
+        setShowCart(false);
+        setCurrentView("orders");
+        setIsProcessingPayment(false);
+        
+        alert("Payment successful! Your order has been placed.");
+        
+        // Simulate order status updates
+        setTimeout(() => {
+          setOrders((prevOrders) =>
+            prevOrders.map((order) =>
+              order.id === newOrder.id ? { ...order, status: "on-the-way" } : order
+            )
+          );
+        }, 5000);
+      } else {
+        console.error("❌ Payment verification failed");
+        alert("Payment verification failed. Please contact support.");
+        setIsProcessingPayment(false);
+      }
+    } catch (error) {
+      console.error("❌ Error verifying payment:", error);
+      alert("Error verifying payment. Please contact support if amount was deducted.");
+      setIsProcessingPayment(false);
+    }
   };
 
   const handlePaymentClose = () => {
-    console.log("Payment popup closed");
+    console.log("Payment popup closed by user");
+    setIsProcessingPayment(false);
   };
 
   // Get current vendors based on view
@@ -624,15 +693,24 @@ export default function App() {
                       ₦{(calculateTotal() + 500).toFixed(2)}
                     </span>
                   </div>
-                  <PaystackButton
-                    amount={(calculateTotal() + 500) * 100}
-                    email="customer@example.com"
-                    onSuccess={handlePaymentSuccess}
-                    onClose={handlePaymentClose}
-                    reference={`PAY-${Date.now()}`}
+                  <button
+                    onClick={handleInitializePayment}
+                    disabled={isProcessingPayment}
+                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
-                    Checkout - Pay with Paystack
-                  </PaystackButton>
+                    {isProcessingPayment ? "Processing..." : "Proceed to Checkout"}
+                  </button>
+                  {paymentReference && (
+                    <PaystackButton
+                      amount={(calculateTotal() + 500) * 100}
+                      email="customer@buy9ja.com"
+                      onSuccess={handlePaymentSuccess}
+                      onClose={handlePaymentClose}
+                      reference={paymentReference}
+                    >
+                      Pay with Paystack
+                    </PaystackButton>
+                  )}
                 </div>
               )}
             </div>
@@ -645,4 +723,3 @@ export default function App() {
     </div>
   );
 }
-
